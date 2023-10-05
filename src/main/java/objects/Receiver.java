@@ -14,7 +14,12 @@ public class Receiver {
 
     public static void main(String[] argv) throws Exception {
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost("localhost");
+        // tente de récupérer l'URL de RabbitMQ
+        if(System.getenv("RABBIT_URL") != null)
+            factory.setUri(System.getenv("RABBIT_URL"));
+        else // sinon on tente en local
+            factory.setHost("localhost");
+
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
 
