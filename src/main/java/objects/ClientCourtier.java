@@ -1,17 +1,17 @@
 package objects;
 
-import com.google.gson.Gson;                    // Import de la librairie Gson pour sérialiser/désérialiser JSON
-import com.rabbitmq.client.Channel;             // Import du canal de communication RabbitMQ
-import com.rabbitmq.client.Connection;          // Import de la connexion RabbitMQ
-import com.rabbitmq.client.ConnectionFactory;   // Import de la fabrique pour créer des connexions
-import com.rabbitmq.client.DeliverCallback;     // Import du callback qui traite les messages reçus
+import com.google.gson.Gson;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.DeliverCallback;
 
-import java.nio.charset.StandardCharsets;       // Import l'encodage UTF-8
+import java.nio.charset.StandardCharsets;
 
-public class Receiver {
+public class ClientCourtier {
 
     // Déclaration du nom de la queue (constante)
-    private final static String QUEUE_NAME = "hello";
+    private final static String QUEUE_NAME = "titres_boursiers_queue";
 
     public static void main(String[] argv) throws Exception {
 
@@ -20,11 +20,14 @@ public class Receiver {
 
         /* tentative de récupération de l'URL de RabbitMQ */
         // On vérifie si une variable d'environnement RABBIT_URL existe
-        if(System.getenv("RABBIT_URL") != null)
+        if (System.getenv("RABBIT_URL") != null){
             // Si oui, on utilise l'URL fournie pour se connecter
             factory.setUri(System.getenv("RABBIT_URL"));
-        else // sinon on tente en local
+        }
+        else {
+            // sinon on tente en local
             factory.setHost("localhost");
+        }
 
         // On établit une connexion avec RabbitMQ
         Connection connection = factory.newConnection();
@@ -35,9 +38,10 @@ public class Receiver {
         // On déclare la queue si elle n'existe pas (durée=false, exclusive=false, autodelete=false)
         channel.queueDeclare(QUEUE_NAME, false, false, false, null);
 
+        // On affiche un message d'attente des messages
         System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
 
-        // Définition d'un callback (fonction) qui sera exécutée quand un message arrive
+        /* Définition d'un callback (fonction) qui sera exécutée quand un message arrive */
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             // On convertit le corps du message en chaîne de caractères UTF-8
             String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
@@ -49,13 +53,13 @@ public class Receiver {
             Gson gson = new Gson();
 
             // On désérialise le message JSON en objet MaClasse
-            MaClasse monObjet = gson.fromJson(message, MaClasse.class);
+            TitreBoursier titreBoursier = gson.fromJson(message, TitreBoursier.class);
 
             // On affiche l'objet désérialisé
-            System.out.println(monObjet);
+            System.out.println(titreBoursier);
         };
 
         // On s'abonne à la queue et traite les messages avec le callback défini plus haut
-        channel.basicConsume(QUEUE_NAME, true, deliverCallback, consumerTag -> { });
+        channel.basicConsume(QUEUE_NAME, true, deliverCallback, consumerTage -> { });
     }
 }
