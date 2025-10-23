@@ -44,7 +44,7 @@ public class ServiceBourse {
             // Sérialisation de l'objet en chaîne JSON
             String message = gson.toJson(titreBoursier);
 
-            // Envoi du message dans la queue "hello" (QUEUE_NAME)
+            // Envoi du message dans la queue "titres_boursiers_queue" (QUEUE_NAME)
             channel.basicPublish("", QUEUE_NAME, null, message.getBytes(StandardCharsets.UTF_8));
 
             // Affichage du message envoyé
